@@ -82,11 +82,36 @@ class MainOptions extends StatelessWidget {
                 color: Colors.grey[300],
                 child: TextButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const OptionsScreen(),
-                      ),
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return SimpleDialog(
+                          title: const Text('Clone Project from git source'),
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: TextField(
+                                autofocus: true,
+                                decoration: InputDecoration(
+                                  hintText: 'Url',
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: TextButton(
+                                child: const Text('Submit'),
+                                onPressed: () async {
+                                  String? result = await FilePicker.platform
+                                      .getDirectoryPath();
+
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     );
                   },
                   child: Column(
@@ -226,7 +251,6 @@ class MainOptions extends StatelessWidget {
 }
 
 class OptionsScreen extends StatefulWidget {
-
   const OptionsScreen({super.key});
 
   @override
@@ -268,8 +292,7 @@ class _OptionsScreenState extends State<OptionsScreen> {
                     'Subversion',
                     style: TextStyle(
                         decoration: TextDecoration.lineThrough,
-                        color: Colors.grey
-                    ),
+                        color: Colors.grey),
                   ),
                 ),
               ],
