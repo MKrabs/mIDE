@@ -25,11 +25,7 @@ class MainOptions extends StatelessWidget {
                 height: 100.0,
                 color: Colors.grey[300],
                 child: TextButton(
-                  onPressed: () async {
-                    final output = await CommandExecutor.execute(
-                        'grep', ['-i', 'main', 'test.dart']);
-                    print(output);
-                  },
+                  onPressed: () {},
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.center,

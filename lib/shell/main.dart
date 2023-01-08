@@ -2,29 +2,29 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:test/test.dart';
-
-void main() {
-  CommandExecutor.execute('echo', ['Hello', 'world!']).then((output) {
-    print(output);
-  }).onError((error, stackTrace) {
-    print(error);
-  });
-}
 
 class CommandExecutor {
-  static Future<Stream<String>> execute(String command, List<String> args) async {
-    Process process = await Process.start(command, args);
+  final StreamController<String> _outputController = StreamController<String>();
 
-    // Create a stream that emits the output of the process line by line.
-    Stream<String> output = process.stdout
-        .transform(utf8.decoder)
-        .transform(const LineSplitter());
+  Stream<String> get outputStream => _outputController.stream;
 
-    // Wait for the process to exit and return the output stream.
-    return process.exitCode.then((_) => output);
+  Future<void> execute(String command, List<String> args) async {
+    Process process = await Process.start(command, args).catchError((error) {
+      _outputController.add(error.toString());
+    });
+
+    process.stdout.transform(utf8.decoder).listen((line) {
+      _outputController.add('line');
+    });
+
+    process.stderr.transform(utf8.decoder).listen((line) {
+      _outputController.add(line);
+    });
+
+    await process.exitCode;
   }
 }
+
 class ShellScreen extends StatefulWidget {
   const ShellScreen({super.key});
 
@@ -33,48 +33,82 @@ class ShellScreen extends StatefulWidget {
 }
 
 class _ShellScreenState extends State<ShellScreen> {
+  final CommandExecutor commandExecutor = CommandExecutor();
   final _commandController = TextEditingController();
-  Stream<String> _outputStream = Stream.empty();
+  final _focusNode = FocusNode();
+  final _scrollController = ScrollController();
+
+  final List<String> output = [];
+
+  void _executeCommand() {
+    String command = _commandController.text.split(' ').first;
+    List<String> args = _commandController.text.split(' ').skip(1).toList();
+    commandExecutor.execute(command, args);
+    _commandController.clear();
+    _focusNode.requestFocus();
+
+    if (_scrollController.hasClients) {
+      final position = _scrollController.position.maxScrollExtent;
+      _scrollController.animateTo(
+        position,
+        duration: const Duration(milliseconds: 300),
+        curve: decelerateEasing,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          TextField(
-            controller: _commandController,
-          ),
-          TextButton(
-            onPressed: () async {
-              String command = _commandController.text.split(' ').first;
-              List<String> args =
-                  _commandController.text.split(' ').skip(1).toList();
-
-              print("====================\n"
-                  "command: $command\n"
-                  "args: $args\n"
-                  "====================");
-              _outputStream = await CommandExecutor.execute(command, args);
-            },
-            child: Text('Run'),
-          ),
-          Expanded(
-            child: StreamBuilder<String>(
-              stream: _outputStream.asBroadcastStream(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                }
-                if (snapshot.hasData) {
-                  return Text('${snapshot.data}');
-                }
-                return Text('Loading...');
-              },
-            )
-            ,
-          ),
-        ],
-      ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        StreamBuilder<String>(
+          stream: commandExecutor.outputStream,
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              output.add('Error: ${snapshot.error}');
+            }
+            if (snapshot.hasData) {
+              output.add('${snapshot.data}');
+            }
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              output.add('waiting...');
+            }
+            return Expanded(
+              child: ListView.builder(
+                controller: _scrollController,
+                itemCount: output.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(output[index]),
+                  );
+                },
+              ),
+            );
+          },
+        ),
+        TextField(
+          controller: _commandController,
+          focusNode: _focusNode,
+          onSubmitted: (value) {
+            _executeCommand();
+          },
+        ),
+        TextButton(
+          onPressed: () {
+            _executeCommand();
+          },
+          child: const Text('Run Command'),
+        ),
+      ],
     );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _commandController.dispose();
+    super.dispose();
   }
 }
