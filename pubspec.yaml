@@ -31,7 +31,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  file_picker:
+  flutter_console: any
+  flutter_local_notifications: any
+  file_picker: any
+  shell: ^2.0.0
+  test: any
 
 
   # The following adds the Cupertino Icons font to your application.
