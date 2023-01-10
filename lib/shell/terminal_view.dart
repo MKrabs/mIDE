@@ -14,7 +14,7 @@ class CommandExecutor {
     });
 
     process.stdout.transform(utf8.decoder).listen((line) {
-      _outputController.add('line');
+      _outputController.add(line);
     });
 
     process.stderr.transform(utf8.decoder).listen((line) {
@@ -59,49 +59,52 @@ class _ShellScreenState extends State<ShellScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        StreamBuilder<String>(
-          stream: commandExecutor.outputStream,
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              output.add('Error: ${snapshot.error}');
-            }
-            if (snapshot.hasData) {
-              output.add('${snapshot.data}');
-            }
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              output.add('waiting...');
-            }
-            return Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: output.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(output[index]),
-                  );
-                },
-              ),
-            );
-          },
-        ),
-        TextField(
-          controller: _commandController,
-          focusNode: _focusNode,
-          onSubmitted: (value) {
-            _executeCommand();
-          },
-        ),
-        TextButton(
-          onPressed: () {
-            _executeCommand();
-          },
-          child: const Text('Run Command'),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          StreamBuilder<String>(
+            stream: commandExecutor.outputStream,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                output.add('Error: ${snapshot.error}');
+              }
+              if (snapshot.hasData) {
+                output.add('${snapshot.data}');
+              }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                output.add('waiting...');
+              }
+              return Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: output.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(output[index]),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          TextField(
+            controller: _commandController,
+            focusNode: _focusNode,
+            onSubmitted: (value) {
+              _executeCommand();
+            },
+          ),
+          TextButton(
+            onPressed: () {
+              _executeCommand();
+            },
+            child: const Text('Run Command'),
+          ),
+        ],
+      ),
     );
   }
 

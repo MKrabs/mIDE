@@ -2,12 +2,24 @@ import 'dart:ffi';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:mide/shell/main.dart';
+import 'package:mide/shell/terminal_view.dart';
+import 'package:mide/views/horizontalBody.dart';
+import 'package:mide/views/project_view.dart';
+import 'package:mide/views/verticalBody.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class MainOptions extends StatelessWidget {
+class MainOptions extends StatefulWidget {
   const MainOptions({
     Key? key,
   }) : super(key: key);
+
+  @override
+  State<MainOptions> createState() => _MainOptionsState();
+}
+
+class _MainOptionsState extends State<MainOptions> {
+  final _formKey = GlobalKey<FormState>();
+  late final String _inputText;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +55,7 @@ class MainOptions extends StatelessWidget {
                 ),
               ),
               Container(
+                key: _formKey,
                 margin: const EdgeInsets.all(8.0),
                 width: 100.0,
                 height: 100.0,
@@ -56,6 +69,8 @@ class MainOptions extends StatelessWidget {
                       print("=====================");
                       print(result);
                       print("=====================");
+
+                      _saveTextAndNavigate();
                     }
                   },
                   child: Column(
@@ -247,6 +262,12 @@ class MainOptions extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  void _saveTextAndNavigate() async {
+    _formKey.currentState?.save();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('savedText', _inputText);
   }
 }
 

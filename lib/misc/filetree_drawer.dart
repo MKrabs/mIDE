@@ -1,84 +1,93 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:mide/misc/keyboard_keys.dart';
 
-class FileTree extends StatelessWidget {
-  const FileTree({
-    Key? key,
-  }) : super(key: key);
+class FileTree extends StatefulWidget {
+  final double width;
+  final String path;
 
+  const FileTree({super.key, this.width = 304, required this.path});
+
+  @override
+  State<FileTree> createState() => _FileTreeState();
+}
+
+class _FileTreeState extends State<FileTree> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: SafeArea(
-        child: Column(
-          children: [
-            ListTile(
-              leading: const FlutterLogo(),
-              title: const Text(
-                'My Files very very very very very very very very very long text',
-                maxLines: 2,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  overflow: TextOverflow.ellipsis,
+      elevation: 0,
+      width: widget.width,
+      backgroundColor: Colors.grey.shade200,
+      child: Column(
+        children: [
+          ListTile(
+            leading: const FlutterLogo(),
+            title: Text(
+              widget.path,
+              maxLines: 2,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            onTap: () {},
+          ),
+          const Divider(),
+          Expanded(
+            child: ListView(
+              children: [
+                ListTile(
+                  title: const Text(
+                    'File 2 but very very very very very very very very very very very very very very very very very very very very very very very very long',
+                    maxLines: 2,
+                    overflow: TextOverflow.fade,
+                  ),
+                  onLongPress: () {
+                    buildShowDialog(context,
+                        'File 2 but very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very long');
+                  },
                 ),
-              ),
-              onTap: () {},
-            ),
-            const Divider(),
-            Expanded(
-              child: ListView(
-                children: [
-                  ListTile(
-                    title: const Text(
-                      'File 2 but very very very very very very very very very very very very very very very very very very very very very very very very long',
-                      maxLines: 2,
-                      overflow: TextOverflow.fade,
+                ExpansionTile(
+                  title: const Text('Folder 1'),
+                  children: [
+                    ListTile(
+                      title: const Text('File 3'),
+                      onLongPress: () {
+                        buildShowDialog(context, 'File 3');
+                      },
                     ),
-                    onLongPress: () {
-                      buildShowDialog(context,
-                          'File 2 but very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very long');
-                    },
-                  ),
-                  ExpansionTile(
-                    title: const Text('Folder 1'),
-                    children: [
-                      ListTile(
-                        title: const Text('File 3'),
-                        onLongPress: () {
-                          buildShowDialog(context, 'File 3');
-                        },
-                      ),
-                      ListTile(
-                        title: const Text('File 4'),
-                        onLongPress: () {
-                          buildShowDialog(context, 'File 4');
-                        },
-                      ),
-                    ],
-                  ),
-                  ExpansionTile(
-                    title: const Text('Folder 2'),
-                    children: [
-                      ListTile(
-                        title: const Text('File 5'),
-                        onLongPress: () {
-                          buildShowDialog(context, 'File 5');
-                        },
-                      ),
-                      ListTile(
-                        title: const Text('File 6'),
-                        onTap: () {
-                          // Add your own code here
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    ListTile(
+                      title: const Text('File 4'),
+                      onLongPress: () {
+                        buildShowDialog(context, 'File 4');
+                      },
+                    ),
+                  ],
+                ),
+                ExpansionTile(
+                  title: const Text('Folder 2'),
+                  children: [
+                    ListTile(
+                      title: const Text('File 5'),
+                      onLongPress: () {
+                        buildShowDialog(context, 'File 5');
+                      },
+                    ),
+                    ListTile(
+                      title: const Text('File 6'),
+                      onTap: () {
+                        // Add your own code here
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
